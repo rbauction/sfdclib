@@ -1,0 +1,48 @@
+DEPLOY_MSG=\
+"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:met="http://soap.sforce.com/2006/04/metadata">
+   <soapenv:Header>
+      <met:CallOptions>
+         <met:client>{client}</met:client>
+      </met:CallOptions>
+      <met:DebuggingHeader>
+         <met:debugLevel>None</met:debugLevel>
+      </met:DebuggingHeader>
+      <met:SessionHeader>
+         <met:sessionId>{sessionId}</met:sessionId>
+      </met:SessionHeader>
+   </soapenv:Header>
+   <soapenv:Body>
+      <met:deploy>
+         <met:ZipFile>{ZipFile}</met:ZipFile>
+         <met:DeployOptions>
+            <met:allowMissingFiles>false</met:allowMissingFiles>
+            <met:autoUpdatePackage>false</met:autoUpdatePackage>
+            <met:checkOnly>{checkOnly}</met:checkOnly>
+            <met:ignoreWarnings>false</met:ignoreWarnings>
+            <met:performRetrieve>false</met:performRetrieve>
+            <met:purgeOnDelete>false</met:purgeOnDelete>
+            <met:rollbackOnError>true</met:rollbackOnError>
+            <met:singlePackage>true</met:singlePackage>
+            <met:testLevel>{testLevel}</met:testLevel>{tests}
+         </met:DeployOptions>
+      </met:deploy>
+   </soapenv:Body>
+</soapenv:Envelope>"""
+
+CHECK_DEPLOY_STATUS_MSG=\
+"""<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:met="http://soap.sforce.com/2006/04/metadata">
+   <soapenv:Header>
+      <met:CallOptions>
+         <met:client>{client}</met:client>
+      </met:CallOptions>
+      <met:SessionHeader>
+         <met:sessionId>{sessionId}</met:sessionId>
+      </met:SessionHeader>
+   </soapenv:Header>
+   <soapenv:Body>
+      <met:checkDeployStatus>
+         <met:asyncProcessId>{asyncProcessId}</met:asyncProcessId>
+         <met:includeDetails>{includeDetails}</met:includeDetails>
+      </met:checkDeployStatus>
+   </soapenv:Body>
+</soapenv:Envelope>"""
