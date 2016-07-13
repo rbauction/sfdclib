@@ -31,28 +31,33 @@ Then create an instance of corresponding API class passing session object.
 
 Implemented methods
 -------------------
-SfdcSession
-***********
 
- - login()
- - is_connected() - returns True if session has been established
- - get_session_id() - returns Salesforce session ID
- - get_server_url() - returns url to the login server (https://test.salesforce.com when not connected and https://<instance_name>.salesforce.com when connected)
- - get_api_version() - returns API version being used (36.0, 37.0, ...)
+
+SfdcSession
+^^^^^^^^^^^
+|
+| **login()** - establishes a session with Salesforce
+| **is_connected()** - returns True if session has been established
+| **get_session_id()** - returns Salesforce session ID
+| **get_server_url()** - returns url to the login server (https://**test**.salesforce.com when not connected and https://**instance_name**.salesforce.com when connected)
+| **get_api_version()** - returns API version being used (36.0, 37.0, ...)
+|
 
 SfdcMetadataApi
-***************
-
- - deploy(zipfile, zipfile, checkonly=False, testlevel="NoTestRun", tests=None) - deploys or verifies deployment package
- - check_deploy_status(id) - returns 3-tuple containing state, state detail and test result errors
+^^^^^^^^^^^^^^^
+|
+| **deploy(zipfile, zipfile, checkonly=False, testlevel="NoTestRun", tests=None)** - deploys or verifies deployment package
+| **check_deploy_status(id)** - returns 3-tuple containing state, state detail and test result errors
+|
 
 SfdcToolingApi
-**************
-
- - anon_query(query) - executes anonymous SOQL query and returns results in a form of [requests.Response] (http://docs.python-requests.org/en/master/user/quickstart/#response-content)
- - get(uri) - sends GET request to specified URI
- - post(uri, data) - sends passed data in a POST request to specified URI
- - delete(uri) - sends DELETE request to specified URI
+^^^^^^^^^^^^^^
+|
+| **anon_query(query)** - executes anonymous SOQL query and returns results in a form of `requests.Response <http://docs.python-requests.org/en/master/user/quickstart/#response-content>`_
+| **get(uri)** - sends GET request to specified URI
+| **post(uri, data)** - sends passed data in a POST request to specified URI
+| **delete(uri)** - sends DELETE request to specified URI
+|
 
 License
 -------

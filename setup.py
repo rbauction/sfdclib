@@ -1,25 +1,26 @@
 """sfdclib package setup"""
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import textwrap
 import sys
 
 setup(
     name='sfdclib',
-    version='0.1',
+    version='0.1.1a5',
     author='Andrey Shevtsov',
-    maintainer='Andrey Shevtsov',
-    maintainer_email='ashevtsov@rbauction.com',
+    author_email='ashevtsov@rbauction.com',
     packages=['sfdclib'],
     url='https://github.com/rbauction/sfdclib',
     license='MIT',
     description=("SFDClib is a Salesforce.com Metadata API and Tooling "
         "API client built for Python 3.3 and 3.4."),
     long_description=textwrap.dedent(open('README.rst', 'r').read()),
+    package_data={'': ['LICENSE']},
+    package_dir={'sfdclib': 'sfdclib'},
     install_requires=[
         'requests[security]'
     ],
-    keywords = "python salesforce salesforce.com metadata tooling api",
+    keywords="python salesforce salesforce.com metadata tooling api",
     classifiers=[
         'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: MIT License',
