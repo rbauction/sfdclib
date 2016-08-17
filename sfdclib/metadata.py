@@ -70,13 +70,15 @@ class SfdcMetadataApi:
         state_detail = ""
         if x:
             state_detail = x.text
-        errors = ""
+        errors = []
         if state == 'Failed':
-            failures = root.findall('soapenv:Body/mt:checkDeployStatusResponse/mt:result/mt:details/mt:runTestResult/mt:failures', SfdcMetadataApi._XML_NAMESPACES)
+            failures = root.findall(
+                'soapenv:Body/mt:checkDeployStatusResponse/mt:result/mt:details/mt:runTestResult/mt:failures',
+                SfdcMetadataApi._XML_NAMESPACES)
             for f in failures:
-                errors += "=====\nClass: %s\nMethod: %s\nError: %s\n" % (
-                    f.find('mt:name', SfdcMetadataApi._XML_NAMESPACES).text,
-                    f.find('mt:methodName', SfdcMetadataApi._XML_NAMESPACES).text,
-                    f.find('mt:message', SfdcMetadataApi._XML_NAMESPACES).text)
+                errors.append({
+                    'class': f.find('mt:name', SfdcMetadataApi._XML_NAMESPACES).text,
+                    'method': f.find('mt:methodName', SfdcMetadataApi._XML_NAMESPACES).text,
+                    'message': f.find('mt:message', SfdcMetadataApi._XML_NAMESPACES).text})
 
         return state, state_detail, errors

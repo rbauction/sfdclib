@@ -6,7 +6,7 @@ import sys
 
 setup(
     name='sfdclib',
-    version='0.1.1a5',
+    version='0.1.2',
     author='Andrey Shevtsov',
     author_email='ashevtsov@rbauction.com',
     packages=['sfdclib'],

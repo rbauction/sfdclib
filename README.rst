@@ -32,7 +32,6 @@ Then create an instance of corresponding API class passing session object.
 Implemented methods
 -------------------
 
-
 SfdcSession
 ^^^^^^^^^^^
 |
