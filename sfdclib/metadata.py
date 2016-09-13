@@ -81,7 +81,6 @@ class SfdcMetadataApi:
             self._XML_NAMESPACES)
         state = result.find('mt:status', self._XML_NAMESPACES).text
         state_detail = result.find('mt:stateDetail', self._XML_NAMESPACES)
-        state_detail = state_detail.text if state_detail else ""
 
         unit_test_errors = []
         deployment_errors = []
