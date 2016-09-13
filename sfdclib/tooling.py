@@ -27,13 +27,7 @@ class SfdcToolingApi():
     @staticmethod
     def _parse_get_post_response(response):
         try:
-            json_object = json.loads(response.text)
-            if not isinstance(json_object, dict):
-                raise Exception("Request failed, JSON is not a dictionary: %s" % json_object)
-            if ('size' in json_object and 'records' in json_object) or \
-                'success' in json_object:
-                return json_object
-            raise Exception("Request failed, unexpected format: %s" % json_object)
+            return json.loads(response.text)
         except ValueError:
             raise Exception("Request failed, response is not JSON: %s" % response.text)
 

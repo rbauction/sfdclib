@@ -24,5 +24,5 @@ $ pip install .
 
 Upload new package to PyPi
 ```sh
-$ twine upload dist/*
+$ twine upload dist/`python setup.py --fullname`*
 ```
