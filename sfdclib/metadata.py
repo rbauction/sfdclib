@@ -64,7 +64,7 @@ class SfdcMetadataApi:
         file.close()
         return b64encode(raw).decode("utf-8")
 
-    def check_deploy_status(self, async_process_id):
+    def _retrieve_deploy_result(self, async_process_id):
         ''' Retrieves status for specified deployment id '''
         attributes = {
             'client': 'Metahelper',
@@ -79,8 +79,18 @@ class SfdcMetadataApi:
         result = root.find(
             'soapenv:Body/mt:checkDeployStatusResponse/mt:result',
             self._XML_NAMESPACES)
+        if result is None:
+            raise Exception("Result node could not be found: %s" % res.text)
+
+        return result
+
+    def check_deploy_status(self, async_process_id):
+        ''' Checks whether deployment succeeded '''
+        result = self._retrieve_deploy_result(async_process_id)
         state = result.find('mt:status', self._XML_NAMESPACES).text
         state_detail = result.find('mt:stateDetail', self._XML_NAMESPACES)
+        if state_detail is not None:
+            state_detail = state_detail.text
 
         unit_test_errors = []
         deployment_errors = []
@@ -104,3 +114,8 @@ class SfdcMetadataApi:
                     'message': failure.find('mt:message', self._XML_NAMESPACES).text})
 
         return state, state_detail, deployment_errors, unit_test_errors
+
+    def download_unit_test_logs(self, async_process_id):
+        ''' Downloads Apex logs for unit tests executed during specified deployment '''
+        result = self._retrieve_deploy_result(async_process_id)
+        print("Results: %s" % ET.tostring(result, encoding="us-ascii", method="xml"))
