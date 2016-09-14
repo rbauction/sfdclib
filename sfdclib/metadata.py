@@ -27,7 +27,7 @@ class SfdcMetadataApi:
     def deploy(self, zipfile, options):
         ''' Kicks off async deployment, returns deployment id '''
         tests_tag = ""
-        if options['tests'] is not None:
+        if 'tests' not in options:
             for test in options['tests']:
                 tests_tag += "            <met:runTests>%s</met:runTests>\n" % test
 
