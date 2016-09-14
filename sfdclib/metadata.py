@@ -24,21 +24,21 @@ class SfdcMetadataApi:
             self._session.get_server_url(),
             self._METADATA_API_BASE_URI.format(**{'version': self._session.get_api_version()}))
 
-    def deploy(self, zipfile, checkonly=False, testlevel="NoTestRun", tests=None):
+    def deploy(self, zipfile, options):
         ''' Kicks off async deployment, returns deployment id '''
         tests_tag = ""
-        if tests is not None:
-            for test in tests:
+        if options['tests'] is not None:
+            for test in options['tests']:
                 tests_tag += "            <met:runTests>%s</met:runTests>\n" % test
 
         attributes = {
-            'checkOnly': checkonly,
-            'testLevel': testlevel,
             'client': 'Metahelper',
             'sessionId': self._session.get_session_id(),
             'ZipFile': self._read_deploy_zip(zipfile),
+            'checkOnly': options['checkonly'],
+            'testLevel': options['testlevel'],
             'tests': tests_tag
-            }
+        }
         request = msg.DEPLOY_MSG.format(**attributes)
 
         headers = {'Content-type': 'text/xml', 'SOAPAction': 'deploy'}
@@ -113,7 +113,20 @@ class SfdcMetadataApi:
                     'method': failure.find('mt:methodName', self._XML_NAMESPACES).text,
                     'message': failure.find('mt:message', self._XML_NAMESPACES).text})
 
-        return state, state_detail, deployment_errors, unit_test_errors
+        deployment_detail = {
+            'total_count': result.find('mt:numberComponentsTotal', self._XML_NAMESPACES).text,
+            'failed_count': result.find('mt:numberComponentErrors', self._XML_NAMESPACES).text,
+            'deployed_count': result.find('mt:numberComponentsDeployed', self._XML_NAMESPACES).text,
+            'errors': deployment_errors
+        }
+        unit_test_detail = {
+            'total_count': result.find('mt:numberTestsTotal', self._XML_NAMESPACES).text,
+            'failed_count': result.find('mt:numberTestErrors', self._XML_NAMESPACES).text,
+            'completed_count': result.find('mt:numberTestsCompleted', self._XML_NAMESPACES).text,
+            'errors': unit_test_errors
+        }
+
+        return state, state_detail, deployment_detail, unit_test_detail
 
     def download_unit_test_logs(self, async_process_id):
         ''' Downloads Apex logs for unit tests executed during specified deployment '''

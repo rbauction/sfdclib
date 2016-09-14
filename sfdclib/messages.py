@@ -7,9 +7,6 @@ xmlns:met="http://soap.sforce.com/2006/04/metadata">
       <met:CallOptions>
          <met:client>{client}</met:client>
       </met:CallOptions>
-      <met:DebuggingHeader>
-         <met:debugLevel>None</met:debugLevel>
-      </met:DebuggingHeader>
       <met:SessionHeader>
          <met:sessionId>{sessionId}</met:sessionId>
       </met:SessionHeader>
