@@ -45,7 +45,7 @@ SfdcSession
 SfdcMetadataApi
 ^^^^^^^^^^^^^^^
 |
-| **deploy(zipfile, zipfile, checkonly=False, testlevel="NoTestRun", tests=None)** - deploys or verifies deployment package
+| **deploy(zipfile, options)** - deploys or verifies deployment package
 | **check_deploy_status(id)** - returns 3-tuple containing state, state detail and test result errors
 |
 
