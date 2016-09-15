@@ -102,7 +102,8 @@ class SfdcMetadataApi:
                     'type': failure.find('mt:componentType', self._XML_NAMESPACES).text,
                     'file': failure.find('mt:fileName', self._XML_NAMESPACES).text,
                     'status': failure.find('mt:problemType', self._XML_NAMESPACES).text,
-                    'message': failure.find('mt:problem', self._XML_NAMESPACES).text})
+                    'message': failure.find('mt:problem', self._XML_NAMESPACES).text
+                    })
             # Unit test failures
             failures = result.findall(
                 'mt:details/mt:runTestResult/mt:failures',
@@ -111,7 +112,9 @@ class SfdcMetadataApi:
                 unit_test_errors.append({
                     'class': failure.find('mt:name', self._XML_NAMESPACES).text,
                     'method': failure.find('mt:methodName', self._XML_NAMESPACES).text,
-                    'message': failure.find('mt:message', self._XML_NAMESPACES).text})
+                    'message': failure.find('mt:message', self._XML_NAMESPACES).text,
+                    'stack_trace': failure.find('mt:stackTrace', self._XML_NAMESPACES).text
+                    })
 
         deployment_detail = {
             'total_count': result.find('mt:numberComponentsTotal', self._XML_NAMESPACES).text,
