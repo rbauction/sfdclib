@@ -15,3 +15,11 @@ from sfdclib.tooling import (
 from sfdclib.metadata import (
     SfdcMetadataApi
 )
+
+from sfdclib.bulk import (
+    SfdcBulkApi
+)
+
+from sfdclib.rest import (
+    SfdcRestApi
+)
