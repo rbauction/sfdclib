@@ -1,6 +1,6 @@
-''' Salesforce API message templates '''
+""" Salesforce API message templates """
 DEPLOY_MSG = \
-"""<soapenv:Envelope
+    """<soapenv:Envelope
 xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
 xmlns:met="http://soap.sforce.com/2006/04/metadata">
    <soapenv:Header>
@@ -30,7 +30,7 @@ xmlns:met="http://soap.sforce.com/2006/04/metadata">
 </soapenv:Envelope>"""
 
 CHECK_DEPLOY_STATUS_MSG = \
-"""<soapenv:Envelope
+    """<soapenv:Envelope
 xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
 xmlns:met="http://soap.sforce.com/2006/04/metadata">
    <soapenv:Header>
