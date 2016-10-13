@@ -122,6 +122,8 @@ class SfdcBulkApi:
         return res.text
 
     def export_object(self, object_name, query=None):
+        """ Exports data of specified object
+            If query is not passed only Id field will be exported """
         if query is None:
             query = "SELECT Id FROM {0}".format(object_name)
 
@@ -146,6 +148,8 @@ class SfdcBulkApi:
         return self._get_batch_result(job_id, batch_id)
 
     def upsert_object(self, object_name, csv_data, external_id_field):
+        """ Upserts data to specified object
+            Records will be matched by external id field """
         # Create async job and add query batch
         job_id = self._create_job('upsert', object_name, 'CSV', external_id_field)
         batch_id = self._add_batch(job_id, csv_data)

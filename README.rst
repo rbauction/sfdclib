@@ -45,8 +45,11 @@ SfdcSession
 SfdcMetadataApi
 ^^^^^^^^^^^^^^^
 |
-| **deploy(zipfile, options)** - deploys or verifies deployment package
+| **deploy(zipfile, options)** - submits deploy request
 | **check_deploy_status(id)** - returns 3-tuple containing state, state detail and test result errors
+| **retrieve(options)** - submits retrieve request
+| **check_retrieve_status(id)** - retrieves retrieve call status. returns 3-tuple containing state, state detail and warning/error messages
+| **retrieve_zip(id)** - retrieves resulting ZIP file for the specified Id of retrieve call. returns 4-tuple containing state, state detail, warning/error messages and ZIP file
 |
 
 SfdcToolingApi
@@ -56,6 +59,13 @@ SfdcToolingApi
 | **get(uri)** - sends GET request to specified URI
 | **post(uri, data)** - sends passed data in a POST request to specified URI
 | **delete(uri)** - sends DELETE request to specified URI
+|
+
+SfdcBulkApi
+^^^^^^^^^^^
+|
+| **export_object(object_name, query=None)** - exports data of specified object. If query is not passed only Id field will be exported
+| **upsert_object(object_name, csv_data, external_id_field)** - upserts data to specified object. Records will be matched by external id field
 |
 
 License
