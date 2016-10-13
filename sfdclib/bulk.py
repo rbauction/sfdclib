@@ -29,13 +29,16 @@ class SfdcBulkApi:
             'Content-Type': "{0}; charset=UTF-8".format(content_type)
         }
 
-    def _create_job(self, operation, object_name, content_type):
+    def _create_job(self, operation, object_name, content_type, external_id_field=None):
         """ Create a job """
         request = {
             'operation': operation,
             'object': object_name,
             'contentType': content_type
         }
+
+        if operation == "upsert" and external_id_field is not None:
+            request['externalIdFieldName'] = external_id_field
 
         url = self._session.construct_url(self._get_api_uri() + "/job")
         res = self._session.post(url, headers=self._get_headers(), json=request)
@@ -58,10 +61,10 @@ class SfdcBulkApi:
                 "Request failed with %d code and error [%s]" %
                 (res.status_code, res.text))
 
-    def _add_query_batch(self, job_id, query):
-        """ Add query batch to job """
+    def _add_batch(self, job_id, data):
+        """ Add batch to job """
         url = self._session.construct_url(self._get_api_uri() + "/job/{0}/batch".format(job_id))
-        res = self._session.post(url, headers=self._get_headers('text/csv'), data=query)
+        res = self._session.post(url, headers=self._get_headers('text/csv'), data=data)
 
         if res.status_code != 201:
             raise Exception(
@@ -83,7 +86,13 @@ class SfdcBulkApi:
         batches = ET.fromstring(res.text).findall('asyncapi:batchInfo', self._XML_NAMESPACES)
         for batch in batches:
             if batch_id == batch.find('asyncapi:id', self._XML_NAMESPACES).text:
-                return batch.find('asyncapi:state', self._XML_NAMESPACES).text
+                state = batch.find('asyncapi:state', self._XML_NAMESPACES).text
+                message = batch.find('asyncapi:stateMessage', self._XML_NAMESPACES)
+                if message is not None:
+                    message = message.text
+                else:
+                    message = None
+                return state, message
 
         raise Exception("Batch was not found")
 
@@ -118,14 +127,35 @@ class SfdcBulkApi:
 
         # Create async job and add query batch
         job_id = self._create_job('query', object_name, 'CSV')
-        batch_id = self._add_query_batch(job_id, query)
+        batch_id = self._add_batch(job_id, query)
         self._close_job(job_id)
 
         # Wait until batch is processed
-        batch_state = self._get_batch_state(job_id, batch_id)
+        batch_state, batch_message = self._get_batch_state(job_id, batch_id)
         while batch_state not in ['Completed', 'Failed', 'Not Processed']:
             time.sleep(5)
-            batch_state = self._get_batch_state(job_id, batch_id)
+            batch_state, batch_message = self._get_batch_state(job_id, batch_id)
+
+        if batch_state == 'Failed':
+            raise Exception("Batch failed: {0}".format(batch_message))
+
+        if batch_state == 'Not processed':
+            raise Exception("Batch will not be processed: {0}".format(batch_message))
 
         # Retrieve and return data in CSV format
         return self._get_batch_result(job_id, batch_id)
+
+    def upsert_object(self, object_name, csv_data, external_id_field):
+        # Create async job and add query batch
+        job_id = self._create_job('upsert', object_name, 'CSV', external_id_field)
+        batch_id = self._add_batch(job_id, csv_data)
+        self._close_job(job_id)
+
+        # Wait until batch is processed
+        batch_state, state_message = self._get_batch_state(job_id, batch_id)
+        while batch_state not in ['Completed', 'Failed', 'Not Processed']:
+            time.sleep(5)
+            batch_state, state_message = self._get_batch_state(job_id, batch_id)
+
+        if batch_state != 'Completed':
+            raise Exception("Upsert call failed: {0}".format(state_message))

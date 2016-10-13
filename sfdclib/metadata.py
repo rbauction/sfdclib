@@ -1,12 +1,12 @@
-''' Class to work with Salesforce Metadata API '''
-from base64 import b64encode
+""" Class to work with Salesforce Metadata API """
+from base64 import b64encode, b64decode
 from xml.etree import ElementTree as ET
 
 import sfdclib.messages as msg
 
 
 class SfdcMetadataApi:
-    ''' Class to work with Salesforce Metadata API '''
+    """ Class to work with Salesforce Metadata API """
     _METADATA_API_BASE_URI = "/services/Soap/m/{version}"
     _XML_NAMESPACES = {
         'soapenv': 'http://schemas.xmlsoap.org/soap/envelope/',
@@ -25,7 +25,7 @@ class SfdcMetadataApi:
             self._METADATA_API_BASE_URI.format(**{'version': self._session.get_api_version()}))
 
     def deploy(self, zipfile, options):
-        ''' Kicks off async deployment, returns deployment id '''
+        """ Kicks off async deployment, returns deployment id """
         tests_tag = ""
         if 'tests' in options:
             for test in options['tests']:
@@ -59,13 +59,20 @@ class SfdcMetadataApi:
 
     @staticmethod
     def _read_deploy_zip(zipfile):
-        file = open(zipfile, 'rb')
+        if hasattr(zipfile, 'read'):
+            file = zipfile
+            file.seek(0)
+            should_close = False
+        else:
+            file = open(zipfile, 'rb')
+            should_close = True
         raw = file.read()
-        file.close()
+        if should_close:
+            file.close()
         return b64encode(raw).decode("utf-8")
 
     def _retrieve_deploy_result(self, async_process_id):
-        ''' Retrieves status for specified deployment id '''
+        """ Retrieves status for specified deployment id """
         attributes = {
             'client': 'Metahelper',
             'sessionId': self._session.get_session_id(),
@@ -85,7 +92,7 @@ class SfdcMetadataApi:
         return result
 
     def check_deploy_status(self, async_process_id):
-        ''' Checks whether deployment succeeded '''
+        """ Checks whether deployment succeeded """
         result = self._retrieve_deploy_result(async_process_id)
         state = result.find('mt:status', self._XML_NAMESPACES).text
         state_detail = result.find('mt:stateDetail', self._XML_NAMESPACES)
@@ -132,6 +139,104 @@ class SfdcMetadataApi:
         return state, state_detail, deployment_detail, unit_test_detail
 
     def download_unit_test_logs(self, async_process_id):
-        ''' Downloads Apex logs for unit tests executed during specified deployment '''
+        """ Downloads Apex logs for unit tests executed during specified deployment """
         result = self._retrieve_deploy_result(async_process_id)
         print("Results: %s" % ET.tostring(result, encoding="us-ascii", method="xml"))
+
+    def retrieve(self, options):
+        """ Submits retrieve request """
+        # Compose unpackaged XML
+        unpackaged = ''
+        for metadata_type in options['unpackaged']:
+            members = options['unpackaged'][metadata_type]
+            unpackaged += '<types>'
+            for member in members:
+                unpackaged += '<members>{0}</members>'.format(member)
+            unpackaged += '<name>{0}</name></types>'.format(metadata_type)
+        # Compose retrieve request XML
+        attributes = {
+            'client': 'Metahelper',
+            'sessionId': self._session.get_session_id(),
+            'apiVersion': self._session.get_api_version(),
+            'singlePackage': options['single_package'],
+            'unpackaged': unpackaged
+        }
+        request = msg.RETRIEVE_MSG.format(**attributes)
+        # Submit request
+        headers = {'Content-type': 'text/xml', 'SOAPAction': 'retrieve'}
+        res = self._session.post(self._get_api_url(), headers=headers, data=request)
+        if res.status_code != 200:
+            raise Exception(
+                "Request failed with %d code and error [%s]" %
+                (res.status_code, res.text))
+        # Parse results to get async Id and status
+        async_process_id = ET.fromstring(res.text).find(
+            'soapenv:Body/mt:retrieveResponse/mt:result/mt:id',
+            self._XML_NAMESPACES).text
+        state = ET.fromstring(res.text).find(
+            'soapenv:Body/mt:retrieveResponse/mt:result/mt:state',
+            self._XML_NAMESPACES).text
+
+        return async_process_id, state
+
+    def _retrieve_retrieve_result(self, async_process_id, include_zip):
+        """ Retrieves status for specified retrieval id """
+        attributes = {
+            'client': 'Metahelper',
+            'sessionId': self._session.get_session_id(),
+            'asyncProcessId': async_process_id,
+            'includeZip': include_zip
+        }
+        mt_request = msg.CHECK_RETRIEVE_STATUS_MSG.format(**attributes)
+        headers = {'Content-type': 'text/xml', 'SOAPAction': 'checkRetrieveStatus'}
+        res = self._session.post(self._get_api_url(), headers=headers, data=mt_request)
+        root = ET.fromstring(res.text)
+        result = root.find(
+            'soapenv:Body/mt:checkRetrieveStatusResponse/mt:result',
+            self._XML_NAMESPACES)
+        if result is None:
+            raise Exception("Result node could not be found: %s" % res.text)
+
+        return result
+
+    def retrieve_zip(self, async_process_id):
+        """ Retrieves ZIP file """
+        result = self._retrieve_retrieve_result(async_process_id, 'true')
+        state = result.find('mt:status', self._XML_NAMESPACES).text
+        error_message = result.find('mt:errorMessage', self._XML_NAMESPACES)
+        if error_message is not None:
+            error_message = error_message.text
+
+        # Check if there are any messages
+        messages = []
+        message_list = result.findall('mt:details/mt:messages', self._XML_NAMESPACES)
+        for message in message_list:
+            messages.append({
+                'file': message.find('mt:fileName', self._XML_NAMESPACES).text,
+                'message': message.find('mt:problem', self._XML_NAMESPACES).text
+            })
+
+        # Retrieve base64 encoded ZIP file
+        zipfile_base64 = result.find('mt:zipFile', self._XML_NAMESPACES).text
+        zipfile = b64decode(zipfile_base64)
+
+        return state, error_message, messages, zipfile
+
+    def check_retrieve_status(self, async_process_id):
+        """ Checks whether retrieval succeeded """
+        result = self._retrieve_retrieve_result(async_process_id, 'false')
+        state = result.find('mt:status', self._XML_NAMESPACES).text
+        error_message = result.find('mt:errorMessage', self._XML_NAMESPACES)
+        if error_message is not None:
+            error_message = error_message.text
+
+        # Check if there are any messages
+        messages = []
+        message_list = result.findall('mt:details/mt:messages', self._XML_NAMESPACES)
+        for message in message_list:
+            messages.append({
+                'file': message.find('mt:fileName', self._XML_NAMESPACES).text,
+                'message': message.find('mt:problem', self._XML_NAMESPACES).text
+            })
+
+        return state, error_message, messages
