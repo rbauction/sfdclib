@@ -64,7 +64,7 @@ class SfdcBulkApi:
     def _add_batch(self, job_id, data):
         """ Add batch to job """
         url = self._session.construct_url(self._get_api_uri() + "/job/{0}/batch".format(job_id))
-        res = self._session.post(url, headers=self._get_headers('text/csv'), data=data)
+        res = self._session.post(url, headers=self._get_headers('text/csv'), data=data.encode('utf-8'))
 
         if res.status_code != 201:
             raise Exception(
