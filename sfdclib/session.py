@@ -41,7 +41,10 @@ xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
     def login(self):
         url = self.construct_url(self.get_soap_api_uri())
         headers = {'Content-Type': 'text/xml', 'SOAPAction': 'login'}
-        data = SfdcSession._LOGIN_TMPL.format(**{'username': self._username, 'password': self._password})
+        password = self._password
+        if self._token:
+            password += self._token
+        data = SfdcSession._LOGIN_TMPL.format(**{'username': self._username, 'password': password})
         r = self.post(url, headers=headers, data=data)
         root = ET.fromstring(r.text)
         if root.find('soapenv:Body/soapenv:Fault', SfdcSession._XML_NAMESPACES):
