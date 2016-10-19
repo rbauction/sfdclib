@@ -88,15 +88,22 @@ class SfdcBulkApi:
             if batch_id == batch.find('asyncapi:id', self._XML_NAMESPACES).text:
                 state = batch.find('asyncapi:state', self._XML_NAMESPACES).text
                 message = batch.find('asyncapi:stateMessage', self._XML_NAMESPACES)
+                processed_count = batch.find('asyncapi:numberRecordsProcessed', self._XML_NAMESPACES).text
+                failed_count = batch.find('asyncapi:numberRecordsFailed', self._XML_NAMESPACES).text
                 if message is not None:
                     message = message.text
                 else:
                     message = None
-                return state, message
+                return {
+                    'state': state,
+                    'message': message,
+                    'processed': processed_count,
+                    'failed': failed_count
+                }
 
         raise Exception("Batch was not found")
 
-    def _get_batch_result(self, job_id, batch_id):
+    def _get_batch_result(self, job_id, batch_id, is_single_job=False):
         """ Get batch's result """
         # Get result Id first
         url = self._session.construct_url(self._get_api_uri() + "/job/{0}/batch/{1}/result".format(job_id, batch_id))
@@ -106,6 +113,9 @@ class SfdcBulkApi:
             raise Exception(
                 "Request failed with %d code and error [%s]" %
                 (res.status_code, res.text))
+
+        if is_single_job:
+            return res.text
 
         result_id = ET.fromstring(res.text).find('asyncapi:result', self._XML_NAMESPACES).text
 
@@ -133,16 +143,16 @@ class SfdcBulkApi:
         self._close_job(job_id)
 
         # Wait until batch is processed
-        batch_state, batch_message = self._get_batch_state(job_id, batch_id)
-        while batch_state not in ['Completed', 'Failed', 'Not Processed']:
+        status = self._get_batch_state(job_id, batch_id)
+        while status['state'] not in ['Completed', 'Failed', 'Not Processed']:
             time.sleep(5)
-            batch_state, batch_message = self._get_batch_state(job_id, batch_id)
+            status = self._get_batch_state(job_id, batch_id)
 
-        if batch_state == 'Failed':
-            raise Exception("Batch failed: {0}".format(batch_message))
+        if status['state'] == 'Failed':
+            raise Exception("Batch failed: {0}".format(status['message']))
 
-        if batch_state == 'Not processed':
-            raise Exception("Batch will not be processed: {0}".format(batch_message))
+        if status['state'] == 'Not processed':
+            raise Exception("Batch will not be processed: {0}".format(status['message']))
 
         # Retrieve and return data in CSV format
         return self._get_batch_result(job_id, batch_id)
@@ -156,10 +166,34 @@ class SfdcBulkApi:
         self._close_job(job_id)
 
         # Wait until batch is processed
-        batch_state, state_message = self._get_batch_state(job_id, batch_id)
-        while batch_state not in ['Completed', 'Failed', 'Not Processed']:
+        status = self._get_batch_state(job_id, batch_id)
+        while status['state'] not in ['Completed', 'Failed', 'Not Processed']:
             time.sleep(5)
-            batch_state, state_message = self._get_batch_state(job_id, batch_id)
+            status = self._get_batch_state(job_id, batch_id)
 
-        if batch_state != 'Completed':
-            raise Exception("Upsert call failed: {0}".format(state_message))
+        if status['state'] != 'Completed':
+            raise Exception("Upsert call failed: {0}".format(status['message']))
+
+        return status
+
+    def update_object(self, object_name, csv_data):
+        """ Updates data in specified object
+            Records will be matched by id field """
+        # Create async job and add query batch
+        job_id = self._create_job('update', object_name, 'CSV')
+        batch_id = self._add_batch(job_id, csv_data)
+        self._close_job(job_id)
+
+        # Wait until batch is processed
+        status = self._get_batch_state(job_id, batch_id)
+        while status['state'] not in ['Completed', 'Failed', 'Not Processed']:
+            time.sleep(5)
+            status = self._get_batch_state(job_id, batch_id)
+
+        if status['state'] != 'Completed':
+            raise Exception("Update call failed: {0}".format(status['message']))
+
+        if int(status['failed']) > 0:
+            status['results'] = self._get_batch_result(job_id, batch_id, True)
+
+        return status
