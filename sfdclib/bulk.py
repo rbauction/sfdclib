@@ -174,6 +174,9 @@ class SfdcBulkApi:
         if status['state'] != 'Completed':
             raise Exception("Upsert call failed: {0}".format(status['message']))
 
+        if int(status['failed']) > 0:
+            status['results'] = self._get_batch_result(job_id, batch_id, True)
+
         return status
 
     def update_object(self, object_name, csv_data):

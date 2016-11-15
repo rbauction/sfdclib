@@ -17,6 +17,11 @@ Build Pure Python Wheel
 $ python setup.py bdist_wheel
 ```
 
+Install package in 'develop mode'
+```sh
+$ pip install -e .
+```
+
 Install new version locally
 ```sh
 $ pip install .
