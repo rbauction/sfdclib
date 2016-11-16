@@ -64,8 +64,10 @@ SfdcToolingApi
 SfdcBulkApi
 ^^^^^^^^^^^
 |
-| **export_object(object_name, query=None)** - exports data of specified object. If query is not passed only Id field will be exported
-| **upsert_object(object_name, csv_data, external_id_field)** - upserts data to specified object. Records will be matched by external id field
+| **export(object_name, query=None)** - exports data of specified object. If query is not passed only Id field will be exported
+| **upsert(object_name, csv_data, external_id_field)** - upserts data to specified object. Records will be matched by external id field
+| **update(object_name, csv_data)** - updates data in specified object. Records will be matched by Id field
+| **delete(object_name, csv_data)** - deletes data from specified object. Records will be matched by Id field
 |
 
 License

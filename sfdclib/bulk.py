@@ -132,6 +132,9 @@ class SfdcBulkApi:
         return res.text
 
     def export_object(self, object_name, query=None):
+        self.export(object_name, query)
+
+    def export(self, object_name, query=None):
         """ Exports data of specified object
             If query is not passed only Id field will be exported """
         if query is None:
@@ -158,6 +161,9 @@ class SfdcBulkApi:
         return self._get_batch_result(job_id, batch_id)
 
     def upsert_object(self, object_name, csv_data, external_id_field):
+        self.upsert(object_name, csv_data, external_id_field)
+
+    def upsert(self, object_name, csv_data, external_id_field):
         """ Upserts data to specified object
             Records will be matched by external id field """
         # Create async job and add query batch
@@ -180,6 +186,9 @@ class SfdcBulkApi:
         return status
 
     def update_object(self, object_name, csv_data):
+        self.update(object_name, csv_data)
+
+    def update(self, object_name, csv_data):
         """ Updates data in specified object
             Records will be matched by id field """
         # Create async job and add query batch
@@ -195,6 +204,31 @@ class SfdcBulkApi:
 
         if status['state'] != 'Completed':
             raise Exception("Update call failed: {0}".format(status['message']))
+
+        if int(status['failed']) > 0:
+            status['results'] = self._get_batch_result(job_id, batch_id, True)
+
+        return status
+
+    def delete_object(self, object_name, csv_data):
+        self.delete(object_name, csv_data)
+
+    def delete(self, object_name, csv_data):
+        """ Deleted data from specified object
+            Records will be matched by id field """
+        # Create async job and add query batch
+        job_id = self._create_job('delete', object_name, 'CSV')
+        batch_id = self._add_batch(job_id, csv_data)
+        self._close_job(job_id)
+
+        # Wait until batch is processed
+        status = self._get_batch_state(job_id, batch_id)
+        while status['state'] not in ['Completed', 'Failed', 'Not Processed']:
+            time.sleep(5)
+            status = self._get_batch_state(job_id, batch_id)
+
+        if status['state'] != 'Completed':
+            raise Exception("Delete call failed: {0}".format(status['message']))
 
         if int(status['failed']) > 0:
             status['results'] = self._get_batch_result(job_id, batch_id, True)
