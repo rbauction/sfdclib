@@ -132,7 +132,7 @@ class SfdcBulkApi:
         return res.text
 
     def export_object(self, object_name, query=None):
-        self.export(object_name, query)
+        return self.export(object_name, query)
 
     def export(self, object_name, query=None):
         """ Exports data of specified object
@@ -161,7 +161,7 @@ class SfdcBulkApi:
         return self._get_batch_result(job_id, batch_id)
 
     def upsert_object(self, object_name, csv_data, external_id_field):
-        self.upsert(object_name, csv_data, external_id_field)
+        return self.upsert(object_name, csv_data, external_id_field)
 
     def upsert(self, object_name, csv_data, external_id_field):
         """ Upserts data to specified object
@@ -186,7 +186,7 @@ class SfdcBulkApi:
         return status
 
     def update_object(self, object_name, csv_data):
-        self.update(object_name, csv_data)
+        return self.update(object_name, csv_data)
 
     def update(self, object_name, csv_data):
         """ Updates data in specified object
@@ -211,7 +211,7 @@ class SfdcBulkApi:
         return status
 
     def delete_object(self, object_name, csv_data):
-        self.delete(object_name, csv_data)
+        return self.delete(object_name, csv_data)
 
     def delete(self, object_name, csv_data):
         """ Deleted data from specified object
