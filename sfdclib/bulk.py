@@ -157,6 +157,8 @@ class SfdcBulkApi:
         if status['state'] == 'Not processed':
             raise Exception("Batch will not be processed: {0}".format(status['message']))
 
+        if status['processed'] == '0':
+            return ''
         # Retrieve and return data in CSV format
         return self._get_batch_result(job_id, batch_id)
 
