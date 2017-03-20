@@ -17,13 +17,14 @@ xmlns:met="http://soap.sforce.com/2006/04/metadata">
          <met:DeployOptions>
             <met:allowMissingFiles>false</met:allowMissingFiles>
             <met:autoUpdatePackage>false</met:autoUpdatePackage>
-            <met:checkOnly>{checkOnly}</met:checkOnly>
+            {checkOnly}
             <met:ignoreWarnings>false</met:ignoreWarnings>
             <met:performRetrieve>false</met:performRetrieve>
             <met:purgeOnDelete>false</met:purgeOnDelete>
             <met:rollbackOnError>true</met:rollbackOnError>
             <met:singlePackage>true</met:singlePackage>
-            <met:testLevel>{testLevel}</met:testLevel>{tests}
+            {testLevel}
+            {tests}
          </met:DeployOptions>
       </met:deploy>
    </soapenv:Body>

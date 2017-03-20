@@ -26,19 +26,28 @@ class SfdcMetadataApi:
 
     def deploy(self, zipfile, options):
         """ Kicks off async deployment, returns deployment id """
+        check_only = ""
+        if 'checkonly' in options:
+            check_only = "<met:checkOnly>%s</met:checkOnly>" % options['checkonly']
+
+        test_level = ""
+        if 'testlevel' in options:
+            test_level = "<met:testLevel>%s</met:testLevel>" % options['testlevel']
+
         tests_tag = ""
         if 'tests' in options:
             for test in options['tests']:
-                tests_tag += "            <met:runTests>%s</met:runTests>\n" % test
+                tests_tag += "<met:runTests>%s</met:runTests>\n" % test
 
         attributes = {
             'client': 'Metahelper',
+            'checkOnly': check_only,
             'sessionId': self._session.get_session_id(),
             'ZipFile': self._read_deploy_zip(zipfile),
-            'checkOnly': options['checkonly'],
-            'testLevel': options['testlevel'],
+            'testLevel': test_level,
             'tests': tests_tag
         }
+
         request = msg.DEPLOY_MSG.format(**attributes)
 
         headers = {'Content-type': 'text/xml', 'SOAPAction': 'deploy'}
