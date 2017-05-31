@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='sfdclib',
-    version='0.2.16',
+    version='0.2.17',
     author='Andrey Shevtsov',
     author_email='ashevtsov@rbauction.com',
     packages=['sfdclib'],
