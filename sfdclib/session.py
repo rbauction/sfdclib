@@ -29,15 +29,15 @@ xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
     def __init__(
             self, username=None, password=None, token=None,
             is_sandbox=False, api_version=_DEFAULT_API_VERSION,
-            session_id=None, instance=None):
+            **kwargs):
         super(SfdcSession, self).__init__()
         self._username = username
         self._password = password
         self._token = token
         self._is_sandbox = is_sandbox
         self._api_version = api_version
-        self._session_id = session_id
-        self._instance = instance
+        self._session_id = kwargs.get("session_id", None)
+        self._instance = kwargs.get("instance", None)
 
     def login(self):
         url = self.construct_url(self.get_soap_api_uri())

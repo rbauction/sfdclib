@@ -27,11 +27,6 @@ A second method, if you've already logged in elsewhere, is to pass in the instan
     from sfdclib import SfdcSession
 
     s = SfdcSession(
-        'username': None,
-        'password': None,
-        'token': None,
-        'is_sandbox': True,
-        'api_version': "37.0",
         'session_id': 'thiswillbeaverylongstringofcharactersincludinglettersspacesandsymbols',
         'instance': 'custom-sf-site.my'
     )
