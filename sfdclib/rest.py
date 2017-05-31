@@ -1,6 +1,9 @@
 """ Class to work with Salesforce REST API """
 import json
-from urllib.parse import urlencode
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urlparse import urlparse
 
 
 class SfdcRestApi:
