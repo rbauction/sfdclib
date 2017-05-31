@@ -9,6 +9,7 @@ Usage
 To use API classes one needs to create a session first by instantiating SfdcSession class and passing login details to the constructor.
 
 One method is to pass in the username, password, and token:
+
 .. code-block:: python
 
     from sfdclib import SfdcSession
@@ -22,6 +23,7 @@ One method is to pass in the username, password, and token:
     s.login()
 
 A second method, if you've already logged in elsewhere, is to pass in the instance and session_id. This method does not require calling login().
+
 .. code-block:: python
 
     from sfdclib import SfdcSession
