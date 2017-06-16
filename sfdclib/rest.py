@@ -3,7 +3,7 @@ import json
 try:
     from urllib.parse import urlencode
 except ImportError:
-    from urlparse import urlparse
+    from urlparse import urlencode
 
 
 class SfdcRestApi:
