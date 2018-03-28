@@ -92,3 +92,24 @@ xmlns:met="http://soap.sforce.com/2006/04/metadata">
       </met:checkRetrieveStatus>
    </soapenv:Body>
 </soapenv:Envelope>"""
+
+GET_METADATA_MSG = """
+<soapenv:Envelope
+   xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+   xmlns:met="http://soap.sforce.com/2006/04/metadata"
+>
+   <soapenv:Header>
+      <met:CallOptions>
+         <met:client>{client}</met:client>
+      </met:CallOptions>
+      <met:SessionHeader>
+         <met:sessionId>{sessionId}</met:sessionId>
+      </met:SessionHeader>
+   </soapenv:Header>
+   <soapenv:Body>
+      <met:describeMetadata>
+         <met:asOfVersion>{apiVersion}</met:asOfVersion>
+      </met:describeMetadata>
+   </soapenv:Body>
+</soapenv:Envelope>
+"""
