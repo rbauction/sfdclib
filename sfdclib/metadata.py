@@ -259,7 +259,7 @@ class SfdcMetadataApi:
             'apiVersion': self._session.get_api_version()
         }
 
-        request = msg.GET_METADATA_MSG.format(**attributes)
+        request = msg.DESCRIBE_METADATA_MSG.format(**attributes)
 
         headers = {'Content-type': 'text/xml', 'SOAPAction': 'describeMetadata'}
         res = self._session.post(self._get_api_url(), headers=headers, data=request)

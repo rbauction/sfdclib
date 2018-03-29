@@ -93,7 +93,7 @@ xmlns:met="http://soap.sforce.com/2006/04/metadata">
    </soapenv:Body>
 </soapenv:Envelope>"""
 
-GET_METADATA_MSG = """
+DESCRIBE_METADATA_MSG = """
 <soapenv:Envelope
    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
    xmlns:met="http://soap.sforce.com/2006/04/metadata"
