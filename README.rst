@@ -65,6 +65,7 @@ SfdcMetadataApi
 | **check_retrieve_status(id)** - retrieves retrieve call status. returns 3-tuple containing state, state detail and warning/error messages
 | **retrieve_zip(id)** - retrieves resulting ZIP file for the specified Id of retrieve call. returns 4-tuple containing state, state detail, warning/error messages and ZIP file
 | **describe()** - retrieves metadata objects from Salesforce
+| **list_metadata(objects)() - given a list of objects, returns their metadata details
 |
 
 SfdcToolingApi
