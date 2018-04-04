@@ -1,4 +1,5 @@
 """ Class to work with Salesforce Metadata API """
+from datetime import datetime
 from base64 import b64encode, b64decode
 from xml.etree import ElementTree as ET
 
@@ -341,10 +342,15 @@ class SfdcMetadataApi:
         for metadata_object in metadata_objects:
             file_name = metadata_object.find('mt:fileName', self._XML_NAMESPACES)
             xml_name = metadata_object.find('mt:fullName', self._XML_NAMESPACES)
+            last_modified = metadata_object.find('mt:lastModifiedDate', self._XML_NAMESPACES)
+
             if file_name is None and xml_name is None:
                 continue
-            metadata_objects_list.append({
+            temp = {
                 "file_name": file_name.text if file_name is not None else "",
                 "xml_name": xml_name.text if xml_name is not None else "",
-            })
+            }
+            if last_modified and len(last_modified.text) > 0:
+                temp["last_modified"] = datetime.strptime(last_modified.text, "%Y-%m-%dT%H:%M:%S")
+            metadata_objects_list.append(temp)
         return metadata_objects_list
