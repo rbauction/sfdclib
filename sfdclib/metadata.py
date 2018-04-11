@@ -1,4 +1,5 @@
 """ Class to work with Salesforce Metadata API """
+from datetime import datetime
 from base64 import b64encode, b64decode
 from xml.etree import ElementTree as ET
 
@@ -249,3 +250,107 @@ class SfdcMetadataApi:
             })
 
         return state, error_message, messages
+
+    def describe(self):
+        """Salesforce Metadata API describe() call.
+        """
+        attributes = {
+            'client': 'Metahelper',
+            'sessionId': self._session.get_session_id(),
+            'apiVersion': self._session.get_api_version()
+        }
+
+        request = msg.DESCRIBE_METADATA_MSG.format(**attributes)
+
+        headers = {'Content-type': 'text/xml', 'SOAPAction': 'describeMetadata'}
+        res = self._session.post(self._get_api_url(), headers=headers, data=request)
+        if res.status_code != 200:
+            raise Exception(
+                "Request failed with %d code and error [%s]" %
+                (res.status_code, res.text))
+
+        root = ET.fromstring(res.text)
+        metadata_objects = root.find(
+            'soapenv:Body/mt:describeMetadataResponse/mt:result',
+            self._XML_NAMESPACES)
+        if metadata_objects is None:
+            raise Exception("Result node could not be found: %s" % res.text)
+        metadata_objects_list = []
+        for metadata_object in metadata_objects:
+            directory_name = metadata_object.find('mt:directoryName', self._XML_NAMESPACES)
+            in_folder = metadata_object.find('mt:inFolder', self._XML_NAMESPACES)
+            metafile = metadata_object.find('mt:metaFile', self._XML_NAMESPACES)
+            suffix = metadata_object.find('mt:suffix', self._XML_NAMESPACES)
+            xml_name = metadata_object.find('mt:xmlName', self._XML_NAMESPACES)
+            if (
+                directory_name is None and in_folder is None and metafile is None
+                and suffix is None and xml_name is None
+            ):
+                continue
+            metadata_objects_list.append({
+                "directory_name": directory_name.text if directory_name is not None else "",
+                "in_folder": in_folder.text if in_folder is not None else "",
+                "metafile": metafile.text if metafile is not None else "",
+                "suffix": suffix.text if suffix is not None else "",
+                "xml_name": xml_name.text if xml_name is not None else "",
+            })
+        return metadata_objects_list
+
+    def list_metadata(self, objects):
+        """Given a list of objects, returns their metadata.
+
+        The objects should be dicts containing the following fields:
+        - directory_name
+        - in_folder
+        - xml_name
+        Only 3 objects can be requested in one call.
+        """
+        if len(objects) > 3:
+            raise ValueError("Only 3 objects are allowed in one query!")
+        queries = []
+        for object_ in objects:
+            temp = ["<met:queries>"]
+            if object_["in_folder"]:
+                temp.append("<met:folder>%s</met:folder>" % object_["directory_name"])
+            temp.append("<met:type>%s</met:type>" % object_["xml_name"])
+            temp.append("</met:queries>")
+            queries.append("".join(temp))
+
+        attributes = {
+            'client': 'Metahelper',
+            'sessionId': self._session.get_session_id(),
+            'apiVersion': self._session.get_api_version(),
+            'queries': "".join(queries)
+        }
+
+        request = msg.LIST_METADATA_MSG.format(**attributes)
+
+        headers = {'Content-type': 'text/xml', 'SOAPAction': 'describeMetadata'}
+        res = self._session.post(self._get_api_url(), headers=headers, data=request)
+        if res.status_code != 200:
+            raise Exception(
+                "Request failed with %d code and error [%s]" %
+                (res.status_code, res.text))
+        root = ET.fromstring(res.text)
+        metadata_objects = root.findall(
+            'soapenv:Body/mt:listMetadataResponse/mt:result',
+            self._XML_NAMESPACES)
+        if metadata_objects is None:
+            raise Exception("Result node could not be found: %s" % res.text)
+        metadata_objects_list = []
+
+        for metadata_object in metadata_objects:
+            file_name = metadata_object.find('mt:fileName', self._XML_NAMESPACES)
+            xml_name = metadata_object.find('mt:fullName', self._XML_NAMESPACES)
+            last_modified = metadata_object.find('mt:lastModifiedDate', self._XML_NAMESPACES)
+
+            if file_name is None and xml_name is None:
+                continue
+            temp = {
+                "file_name": file_name.text if file_name is not None else "",
+                "xml_name": xml_name.text if xml_name is not None else "",
+            }
+            if last_modified and len(last_modified.text) > 0:
+                temp["last_modified"] = datetime.strptime(last_modified.text, "%Y-%m-%dT%H:%M:%S")
+            metadata_objects_list.append(temp)
+        return metadata_objects_list

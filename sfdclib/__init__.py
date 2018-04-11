@@ -23,3 +23,7 @@ from sfdclib.bulk import (
 from sfdclib.rest import (
     SfdcRestApi
 )
+
+from sfdclib.soap import (
+    SfdcSoapApi
+)

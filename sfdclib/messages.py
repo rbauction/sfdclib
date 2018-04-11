@@ -92,3 +92,64 @@ xmlns:met="http://soap.sforce.com/2006/04/metadata">
       </met:checkRetrieveStatus>
    </soapenv:Body>
 </soapenv:Envelope>"""
+
+DESCRIBE_METADATA_MSG = """
+<soapenv:Envelope
+   xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+   xmlns:met="http://soap.sforce.com/2006/04/metadata"
+>
+   <soapenv:Header>
+      <met:CallOptions>
+         <met:client>{client}</met:client>
+      </met:CallOptions>
+      <met:SessionHeader>
+         <met:sessionId>{sessionId}</met:sessionId>
+      </met:SessionHeader>
+   </soapenv:Header>
+   <soapenv:Body>
+      <met:describeMetadata>
+         <met:asOfVersion>{apiVersion}</met:asOfVersion>
+      </met:describeMetadata>
+   </soapenv:Body>
+</soapenv:Envelope>
+"""
+
+LIST_METADATA_MSG = """
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:met="http://soap.sforce.com/2006/04/metadata">
+   <soapenv:Header>
+      <met:CallOptions>
+         <met:client>{client}</met:client>
+      </met:CallOptions>
+      <met:SessionHeader>
+         <met:sessionId>{sessionId}</met:sessionId>
+      </met:SessionHeader>
+   </soapenv:Header>
+   <soapenv:Body>
+      <met:listMetadata>
+         {queries}
+         <met:asOfVersion>{apiVersion}</met:asOfVersion>
+      </met:listMetadata>
+   </soapenv:Body>
+</soapenv:Envelope>
+"""
+
+DESCRIBE_SOBJECT_MSG = """
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+   <soapenv:Header>>
+      <urn:PackageVersionHeader>
+         <urn:packageVersions>
+            <urn:majorNumber>{majorNumber}</urn:majorNumber>
+            <urn:minorNumber>{minorNumber}</urn:minorNumber>
+         </urn:packageVersions>
+      </urn:PackageVersionHeader>
+      <urn:SessionHeader>
+         <urn:sessionId>{sessionId}</urn:sessionId>
+      </urn:SessionHeader>
+   </soapenv:Header>
+   <soapenv:Body>
+      <urn:describeSObject>
+         <urn:sObjectType>{sobjectName}</urn:sObjectType>
+      </urn:describeSObject>
+   </soapenv:Body>
+</soapenv:Envelope>
+"""
