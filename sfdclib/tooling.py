@@ -25,7 +25,7 @@ class SfdcToolingApi():
         return {
             'Authorization': 'Bearer %s' % self._session.get_session_id(),
             'Accept-Encoding': 'gzip',
-            'Content_Type': 'application/json'}
+            'Content-Type': 'application/json'}
 
     @staticmethod
     def _parse_get_post_response(response):
@@ -43,7 +43,7 @@ class SfdcToolingApi():
     def post(self, uri, data):
         ''' HTTP POST request '''
         url = self._session.construct_url(self._get_tooling_api_uri() + uri)
-        response = self._session.post(url, headers=self._get_headers(), json=data)
+        response = self._session.post(url, headers=self._get_headers(), data=data)
         return self._parse_get_post_response(response)
 
     def delete(self, uri):
