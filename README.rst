@@ -73,6 +73,11 @@ SfdcToolingApi
 | **get(uri)** - sends GET request to specified URI
 | **post(uri, data)** - sends passed data in a POST request to specified URI
 | **delete(uri)** - sends DELETE request to specified URI
+| **anon_apex(apex)** - executes anonymous apex with a success or error message
+| **execute_AnonApex(apex) ** - executes anonymous apex and returns the System output information in the form of a text body
+| **apexLog_Q(auditlog_id)** - queries for and returns the AuditLog body of the AuditLog Id given to it.
+| **set_Traceflag(user_id)** - sets a traceflag for the supplied user Id
+| **delete_Traceflag(traceflag_id)** - deletes the TraceFlag associated with the provided TraceFlag Id
 |
 
 SfdcBulkApi
@@ -83,6 +88,11 @@ SfdcBulkApi
 | **update(object_name, csv_data)** - updates data in specified object. Records will be matched by Id field
 | **delete(object_name, csv_data)** - deletes data from specified object. Records will be matched by Id field
 |
+
+TroubleShooting
+-------
+To use the execute_AnonApex function you will need to provide a DebugLevelId to the traceFlagPL located in the function set_Traceflag(). 
+To get your DebugLevelId log onto the Salesforce environment, open the developer console, and execute **select Id, LogType, ExpirationDate, DebugLevelId from TraceFlag**.
 
 License
 -------

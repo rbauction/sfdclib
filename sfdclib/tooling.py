@@ -1,5 +1,6 @@
 ''' Class to work with Salesforce Tooling API '''
 import json
+import datetime
 try:
     from urllib.parse import urlencode
 except ImportError:
@@ -10,7 +11,10 @@ class SfdcToolingApi():
     ''' Class to work with Salesforce Tooling API  '''
     _TOOLING_API_BASE_URI = "/services/data/v{version}/tooling"
     _ANON_QUERY_URI = "/query/?{query}"
-
+    _EXECUTE_ANON_APEX_URI = "/executeAnonymous/?{a}"
+    _TRACE_FLAG_URI = "/sobjects/traceFlag"
+    _APEX_LOG_URI = "/sobjects/ApexLog/{uid}/Body"
+    
     def __init__(self, session):
         if not session.is_connected():
             raise Exception("Session must be connected prior to instantiating this class")
@@ -33,12 +37,22 @@ class SfdcToolingApi():
             return json.loads(response.text)
         except ValueError:
             raise Exception("Request failed, response is not JSON: %s" % response.text)
+    @staticmethod
+    def _parse_get_post_response_text(response):
+        return response.text
+                 
 
     def get(self, uri):
         ''' HTTP GET request '''
         url = self._session.construct_url(self._get_tooling_api_uri() + uri)
         response = self._session.get(url, headers=self._get_headers())
         return self._parse_get_post_response(response)
+
+    def get_textBody(self, uri):
+        ''' HTTP GET request '''
+        url = self._session.construct_url(self._get_tooling_api_uri() + uri)
+        response = self._session.get(url, headers=self._get_headers())
+        return response.text
 
     def post(self, uri, data):
         ''' HTTP POST request '''
@@ -62,3 +76,93 @@ class SfdcToolingApi():
         if not isinstance(res, dict):
             raise Exception("Request failed. Response: %s" % res)
         return res
+
+    def getDebug(self, uri):
+        ''' HTTP GET request '''
+        url = self._session.construct_url(self._get_tooling_api_uri() + uri)
+        response = self._session.get(url, headers=self._get_headers())
+        return self._parse_get_post_response(response)
+
+    def anon_apex(self, apex):
+        ''' Anonymous APEX '''
+        res = self.getDebug(self._EXECUTE_ANON_APEX_URI.format(**{'a': urlencode({'anonymousBody': apex})}))
+        if not isinstance(res, dict):
+            raise Exception("Request failed. Response: %s" % res)
+        return res
+
+    def apexLog_Q(self, id):
+        ''' Anonymous APEX '''
+        res = self.get_textBody(self._APEX_LOG_URI.format(**{'uid': id}))
+        return res
+
+    def set_Traceflag(self,tfid):
+        
+        tomorrowsDate = datetime.date.today() + datetime.timedelta(days=1)
+        tomorrowsDate = tomorrowsDate.strftime('%Y-%m-%d')
+
+        traceFlagPL = '''{
+            "ApexCode": "Finest",
+            "ApexProfiling": "Error",
+            "Callout": "Error",
+            "Database": "Error",
+            "ExpirationDate": "%s",
+            "TracedEntityId": "%s",
+            "Validation": "Error",
+            "Visualforce": "Error",
+            "Workflow": "Error",
+            "System": "Error",
+            "LogType": "DEVELOPER_LOG",
+            "DebugLevelId": "debuglevelid"
+        }''' % (tomorrowsDate,tfid)
+
+        # POST
+        res = self.post(self._TRACE_FLAG_URI, traceFlagPL)
+        return res
+
+    def delete_Traceflag(self,tfID):
+        delURI = self._TRACE_FLAG_URI + '/' + tfID
+        res = self.delete(delURI)
+        return res
+
+    def execute_AnonApex(self,apex):
+
+        # === setup TraceFlag ===
+        # get the user id
+        userId = self.get_sf_user_id(self._session._username)
+        # create traceflag and store it's id for removal later
+        traceflagCreationRes = self.set_Traceflag(userId)
+        # get the traceflag ID
+        traceFlagId = self.get_traceflag_id(traceflagCreationRes)
+        # run the apex
+        anonApexResponse = self.anon_apex(apex)
+        #print(anonApexResponse)
+        # get auditlog id
+        logQuery = "SELECT Id FROM ApexLog WHERE Operation LIKE '%/executeAnonymous/%' ORDER BY SystemModstamp DESC NULLS LAST LIMIT 1"
+        logQRes = self.anon_query(logQuery)
+        AuditLogId = self.parse_JSON_Response(logQRes)
+        queryResponse = self.apexLog_Q(AuditLogId)
+        # remove the traceflag
+        self.delete_Traceflag(traceFlagId)
+        # return the auditlog body 
+        return queryResponse
+
+    def parse_JSON_Response(self, jsonRes):
+        json_string = json.dumps(jsonRes)
+        parsedJSON = json.loads(json_string)
+
+        for q in parsedJSON['records']:
+            uId = q['Id']
+            return uId
+ 
+
+    def get_sf_user_id(self, username):
+        userIdQ = "SELECT Id FROM User WHERE Username = '%s'" % (username) 
+        userIdQRes = self.anon_query(userIdQ)
+        userId = self.parse_JSON_Response(userIdQRes)
+        return userId
+
+    def get_traceflag_id(self,traceflagResponse):
+        json_string = json.dumps(traceflagResponse)
+        parsedJSON = json.loads(json_string)
+        traceFlagId = parsedJSON['id']
+        return traceFlagId
