@@ -96,10 +96,16 @@ class SfdcToolingApi():
         return res
 
     def set_Traceflag(self,tfid):
-        
+        # check if there is an existing traceflag
+        #userId = self.get_sf_user_id(self._session._username)
+        #tfCheckQ = "SELECT + Id + FROM + TraceFlag + WHERE + TracedEntityId += +'%s'" % (userId)
+        #tfCheck = self.anon_query(tfCheckQ)
+
+        #if(tfCheck['records']['id']):
+        #    print()
         tomorrowsDate = datetime.date.today() + datetime.timedelta(days=1)
         tomorrowsDate = tomorrowsDate.strftime('%Y-%m-%d')
-
+        debugLevelId = self.get_DevDebugLevelId()
         traceFlagPL = '''{
             "ApexCode": "Finest",
             "ApexProfiling": "Error",
@@ -112,8 +118,8 @@ class SfdcToolingApi():
             "Workflow": "Error",
             "System": "Error",
             "LogType": "DEVELOPER_LOG",
-            "DebugLevelId": "debuglevelid"
-        }''' % (tomorrowsDate,tfid)
+            "DebugLevelId": "%s"
+        }''' % (tomorrowsDate,tfid,debugLevelId)
 
         # POST
         res = self.post(self._TRACE_FLAG_URI, traceFlagPL)
@@ -129,13 +135,17 @@ class SfdcToolingApi():
         # === setup TraceFlag ===
         # get the user id
         userId = self.get_sf_user_id(self._session._username)
+        print("User ID to create a traceflag for: {}".format(userId))
         # create traceflag and store it's id for removal later
         traceflagCreationRes = self.set_Traceflag(userId)
+        print("Traceflag creation response: {}".format(traceflagCreationRes))
         # get the traceflag ID
+
         traceFlagId = self.get_traceflag_id(traceflagCreationRes)
+        print("ID Of the Traceflag: {}".format(traceFlagId))
         # run the apex
         anonApexResponse = self.anon_apex(apex)
-        #print(anonApexResponse)
+        ##print(anonApexResponse)
         # get auditlog id
         logQuery = "SELECT Id FROM ApexLog WHERE Operation LIKE '%/executeAnonymous/%' ORDER BY SystemModstamp DESC NULLS LAST LIMIT 1"
         logQRes = self.anon_query(logQuery)
@@ -166,3 +176,11 @@ class SfdcToolingApi():
         parsedJSON = json.loads(json_string)
         traceFlagId = parsedJSON['id']
         return traceFlagId
+
+    def get_DevDebugLevelId(self):
+        devDebuglogIdRes = self.anon_query("select DebugLevelId from TraceFlag WHERE LogType = 'DEVELOPER_LOG' LIMIT 1")
+        json_string = json.dumps(devDebuglogIdRes)
+        parsedJSON = json.loads(json_string)
+        for d in parsedJSON['records']:
+            debugLevelId = d['DebugLevelId']
+            return debugLevelId
