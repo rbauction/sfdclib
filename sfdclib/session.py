@@ -47,7 +47,7 @@ xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
             password += self._token
         data = SfdcSession._LOGIN_TMPL.format(**{'username': self._username, 'password': password})
         r = self.post(url, headers=headers, data=data)
-        root = ET.fromstring(r.text)
+        root = ET.fromstring(r.text.encode('utf-8'))
         if root.find('soapenv:Body/soapenv:Fault', SfdcSession._XML_NAMESPACES):
             raise Exception("Could not log in. Code: %s Message: %s" % (
                 root.find('soapenv:Body/soapenv:Fault/faultcode', SfdcSession._XML_NAMESPACES).text,
