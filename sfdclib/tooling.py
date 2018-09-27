@@ -97,12 +97,22 @@ class SfdcToolingApi():
 
     def set_Traceflag(self,tfid):
         # check if there is an existing traceflag
-        #userId = self.get_sf_user_id(self._session._username)
-        #tfCheckQ = "SELECT + Id + FROM + TraceFlag + WHERE + TracedEntityId += +'%s'" % (userId)
-        #tfCheck = self.anon_query(tfCheckQ)
+        userId = self.get_sf_user_id(self._session._username)
 
-        #if(tfCheck['records']['id']):
-        #    print()
+        tfCheckQ = "SELECT Id FROM TraceFlag WHERE TracedEntityId = '{}'".format(userId)
+
+
+        tfCheck = self.anon_query(tfCheckQ)
+        json_string = json.dumps(tfCheck)
+        parsedJSON = json.loads(json_string)
+        
+        tf_id = ''
+        for q in parsedJSON['records']:
+            uId = q['Id']
+            tf_id = uId
+        
+        if(tf_id):
+            self.delete_Traceflag(tf_id)
         tomorrowsDate = datetime.date.today() + datetime.timedelta(days=1)
         tomorrowsDate = tomorrowsDate.strftime('%Y-%m-%d')
         debugLevelId = self.get_DevDebugLevelId()
