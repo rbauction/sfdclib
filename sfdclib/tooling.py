@@ -113,7 +113,8 @@ class SfdcToolingApi():
         
         if(tf_id):
             self.delete_Traceflag(tf_id)
-        tomorrowsDate = datetime.date.today() + datetime.timedelta(days=1)
+        #tomorrowsDate = datetime.date.today() + datetime.timedelta(days=1)
+        tomorrowsDate = datetime.datetime.utcnow() + datetime.timedelta(days=1)
         tomorrowsDate = tomorrowsDate.strftime('%Y-%m-%d')
         debugLevelId = self.get_DevDebugLevelId()
         traceFlagPL = '''{
