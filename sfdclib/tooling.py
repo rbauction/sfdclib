@@ -111,7 +111,7 @@ class SfdcToolingApi():
             uId = q['Id']
             tf_id = uId
         
-        if(tf_id):
+        if (tf_id):
             self.delete_Traceflag(tf_id)
         #tomorrowsDate = datetime.date.today() + datetime.timedelta(days=1)
         tomorrowsDate = datetime.datetime.utcnow() + datetime.timedelta(days=1)
@@ -146,19 +146,17 @@ class SfdcToolingApi():
         # === setup TraceFlag ===
         # get the user id
         userId = self.get_sf_user_id(self._session._username)
-        print("User ID to create a traceflag for: {}".format(userId))
         # create traceflag and store it's id for removal later
         traceflagCreationRes = self.set_Traceflag(userId)
-        print("Traceflag creation response: {}".format(traceflagCreationRes))
         # get the traceflag ID
 
         traceFlagId = self.get_traceflag_id(traceflagCreationRes)
-        print("ID Of the Traceflag: {}".format(traceFlagId))
         # run the apex
         anonApexResponse = self.anon_apex(apex)
-        ##print(anonApexResponse)
+
         # get auditlog id
-        logQuery = "SELECT Id FROM ApexLog WHERE Operation LIKE '%/executeAnonymous/%' ORDER BY SystemModstamp DESC NULLS LAST LIMIT 1"
+        logQuery = "SELECT Id FROM ApexLog WHERE LogUserId = '{}' ORDER BY SystemModstamp DESC NULLS LAST LIMIT 1".format(userId)
+
         logQRes = self.anon_query(logQuery)
         AuditLogId = self.parse_JSON_Response(logQRes)
         queryResponse = self.apexLog_Q(AuditLogId)
