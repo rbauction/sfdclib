@@ -1,5 +1,5 @@
 import re
-
+from xml.sax.saxutils import escape
 from requests import Session
 from xml.etree import ElementTree as ET
 
@@ -31,12 +31,12 @@ xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
             is_sandbox=False, api_version=_DEFAULT_API_VERSION,
             **kwargs):
         super(SfdcSession, self).__init__()
-        self._username = username
-        self._password = password
-        self._token = token
+        self._username = self.get_escaped_arg(username)
+        self._password = self.get_escaped_arg(password)
+        self._token = self.get_escaped_arg(token)
         self._is_sandbox = is_sandbox
         self._api_version = api_version
-        self._session_id = kwargs.get("session_id", None)
+        self._session_id = self.get_escaped_arg(kwargs.get("session_id", None))
         self._instance = kwargs.get("instance", None)
 
     def login(self):
@@ -75,3 +75,8 @@ xmlns:env='http://schemas.xmlsoap.org/soap/envelope/'>
 
     def is_connected(self):
         return True if self._instance else False
+
+    def get_escaped_arg(self, arg):
+        if arg:
+            arg = escape(arg)
+        return arg
