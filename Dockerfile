@@ -8,8 +8,6 @@ WORKDIR /opt/sfdclib
 RUN pip install --user pipenv
 ENV PATH="/root/.local/bin:${PATH}"
 
-COPY Pipfile /opt/sfdclib/
-
 ARG ARTIFACTORY_USER
 ENV ARTIFACTORY_USER=$ARTIFACTORY_USER
 
@@ -22,11 +20,11 @@ RUN pipenv sync --dev
 ARG VERSION
 ENV APP_VERSION=$VERSION
 
-COPY acv_sfclient /opt/sfdclib/acv_sfclient/
-COPY tests /opt/sfdclib/tests/
+COPY sfdclib /opt/sfdclib/sfdclib
 COPY .pypirc /root/.pypirc
 COPY run.sh /opt/sfdclib/run.sh
 COPY setup.py /opt/sfdclib/setup.py
+COPY README.* /opt/sfdclib/
 
 ENV APP_MODE=$APP_MODE
 CMD ["sh", "-c", "./run.sh"]
