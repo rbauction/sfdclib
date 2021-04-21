@@ -13,8 +13,8 @@ deps:
 build: clean
 	git submodule update --init --recursive
 	@docker build \
-		--build-arg ARTIFACTORY_USER=${ARTIFACTORY_USER} \
-		--build-arg ARTIFACTORY_PASSWORD=${ARTIFACTORY_PASSWORD} \
+		--build-arg NEXUS_USER=${NEXUS_USER} \
+		--build-arg NEXUS_PASSWORD=${NEXUS_PASSWORD} \
 		--build-arg VERSION=${VERSION} \
 		--tag $(CONTAINER_NAME):$(VERSION) .
 
@@ -22,8 +22,8 @@ build: clean
 deploy: build
 	docker run \
 	    -e APP_MODE=deploy \
-        -e ARTIFACTORY_USER=${ARTIFACTORY_USER} \
-        -e ARTIFACTORY_PASSWORD=${ARTIFACTORY_PASSWORD} \
+        -e NEXUS_USER=${NEXUS_USER} \
+        -e NEXUS_PASSWORD=${NEXUS_PASSWORD} \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		$(CONTAINER_NAME):$(VERSION)
 

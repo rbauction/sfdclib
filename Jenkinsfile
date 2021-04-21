@@ -1,9 +1,17 @@
+@Library('acv-jenkins-lib')
+import com.acvJenkins.*;
+
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            defaultContainer 'docker'
+            yaml new GlobalVars().runnerPod()
+        }
+    }
     environment {
-        ARTIFACTORY_CREDS = credentials('ARTIFACTORY_CREDS')
-        ARTIFACTORY_USER = "${ARTIFACTORY_CREDS_USR}"
-        ARTIFACTORY_PASSWORD = "${ARTIFACTORY_CREDS_PSW}"
+        NEXUS_CREDS = credentials('NEXUS_CREDS')
+        NEXUS_USER = "${NEXUS_CREDS_USR}"
+        NEXUS_PASSWORD = "${NEXUS_CREDS_PSW}"
     }
     stages {
         stage('Publish') {
