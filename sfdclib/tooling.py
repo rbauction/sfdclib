@@ -64,7 +64,9 @@ class SfdcToolingApi():
         ''' HTTP PATCH request '''
         url = self._session.construct_url(self._get_tooling_api_uri() + uri)
         response = self._session.patch(url, headers=self._get_headers(), json=data)
-        return self._parse_get_post_response(response)
+        if response:
+            return self._parse_get_post_response(response)
+        return response
 
     def delete(self, uri):
         ''' HTTP DELETE request '''
