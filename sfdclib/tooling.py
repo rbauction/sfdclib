@@ -64,7 +64,8 @@ class SfdcToolingApi():
         ''' HTTP PATCH request '''
         url = self._session.construct_url(self._get_tooling_api_uri() + uri)
         response = self._session.patch(url, headers=self._get_headers(), json=data)
-        if response and response.text:
+        # Had to use "is not None" here to get the desired outcome, despite not being too "pythonic"
+        if response is not None and response.text is not None:
             return self._parse_get_post_response(response)
         return response
 
