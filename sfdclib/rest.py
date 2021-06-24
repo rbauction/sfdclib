@@ -10,6 +10,7 @@ class SfdcRestApi:
     """ Class to work with Salesforce REST API """
     _API_BASE_URI = "/services/data/v{version}"
     _SOQL_QUERY_URI = "/query/?{query}"
+    _API_APEXREST_URI = "/services/apexrest/v{version}"
 
     def __init__(self, session):
         if not session.is_connected():
