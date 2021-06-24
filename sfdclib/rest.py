@@ -17,6 +17,10 @@ class SfdcRestApi:
             raise Exception("Session must be connected prior to instantiating this class")
         self._session = session
 
+    def _get_apexrest_api_uri(self):
+        """Returns APEXREST API base URI for this connection"""
+        return self._API_APEXREST_URI.format(**{'version': self._session.get_api_version()})
+
     def _get_api_uri(self):
         """ Returns REST API base URI for this connection """
         return self._API_BASE_URI.format(**{'version': self._session.get_api_version()})
