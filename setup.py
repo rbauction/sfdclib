@@ -4,8 +4,8 @@ import textwrap
 from setuptools import setup
 
 setup(
-    name='sfdclib',
-    version='0.2.26.10-acv',
+    name='sfdclib-acv',
+    version='0.2.26.11',
     author='Andrey Shevtsov',
     author_email='ashevtsov@rbauction.com',
     packages=['sfdclib'],
