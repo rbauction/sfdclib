@@ -10,11 +10,16 @@ class SfdcRestApi:
     """ Class to work with Salesforce REST API """
     _API_BASE_URI = "/services/data/v{version}"
     _SOQL_QUERY_URI = "/query/?{query}"
+    _API_APEXREST_URI = "/services/apexrest"
 
     def __init__(self, session):
         if not session.is_connected():
             raise Exception("Session must be connected prior to instantiating this class")
         self._session = session
+
+    def _get_apexrest_api_uri(self):
+        """Returns APEXREST API base URI without the version for this connection"""
+        return self._API_APEXREST_URI
 
     def _get_api_uri(self):
         """ Returns REST API base URI for this connection """
@@ -44,6 +49,12 @@ class SfdcRestApi:
         """ HTTP POST request """
         url = self._session.construct_url(self._get_api_uri() + uri)
         response = self._session.post(url, headers=self._get_headers(), json=data)
+        return self._parse_get_post_response(response)
+
+    def patch(self, uri, data):
+        """" HTTP PATCH request"""
+        url = self._session.construct_url(self._get_api_uri() + uri)
+        response = self._session.patch(url, headers=self._get_headers(), json=data)
         return self._parse_get_post_response(response)
 
     def delete(self, uri):

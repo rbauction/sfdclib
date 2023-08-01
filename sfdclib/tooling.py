@@ -60,6 +60,17 @@ class SfdcToolingApi():
         response = self._session.post(url, headers=self._get_headers(), data=data)
         return self._parse_get_post_response(response)
 
+    def patch(self, uri, data):
+        ''' HTTP PATCH request '''
+        url = self._session.construct_url(self._get_tooling_api_uri() + uri)
+        response = self._session.patch(url, headers=self._get_headers(), json=data)
+        # Since we can't rely on Salesforce to give us a good JSON response on these PATCH requests, just wrap in
+        # a try except and hope for the best...
+        try:
+            return self._parse_get_post_response(response)
+        except Exception:
+            return response
+
     def delete(self, uri):
         ''' HTTP DELETE request '''
         try:
