@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='sfdclib-acv',
-    version='0.2.26.11',
+    version='0.2.26.12',
     author='Andrey Shevtsov',
     author_email='ashevtsov@rbauction.com',
     packages=['sfdclib'],
